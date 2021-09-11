@@ -6,6 +6,7 @@ import argparse
 import csv
 from datetime import datetime
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class GainsGrapher:
@@ -13,7 +14,7 @@ class GainsGrapher:
     METRICS = {
         '1rm': '1RM',
         'weight': 'Weight',
-        'volume': 'Volume'
+        'volume': 'Set Volume'
     }
     # Format of dates in the CSV
     DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -48,10 +49,14 @@ class GainsGrapher:
                 y.append(self.calc_metric(float(row['Weight']), int(row['Reps'])))
         if not len(x) or not len(y):
             raise ValueError('Unable to find data for exercise "{}".'.format(self.exercise))
-        plt.plot(x, y)
+        epochs = [t.timestamp() for t in x]
+        p = np.poly1d(np.polyfit(epochs, y, 1))
+
+        plt.scatter(x, y)
         plt.title(self.exercise)
         plt.xlabel('Date')
         plt.ylabel(GainsGrapher.METRICS[self.metric])
+        plt.plot(x, p(epochs), 'r--')
         plt.show()
 
     def list_exercises(self):
